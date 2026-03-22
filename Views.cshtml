@@ -1,0 +1,772 @@
+<!-- ============================================================
+     FILE    : Views/Shared/_Layout.cshtml
+     PURPOSE : Master layout — navbar + footer on every page
+     ============================================================ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewBag.Title — BizFleet</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <!-- Our custom styles -->
+    <link href="@Url.Content("~/Content/bizfleet.css")" rel="stylesheet" />
+</head>
+<body>
+
+    <!-- ── NAVBAR ── -->
+    <nav class="navbar navbar-bizfleet navbar-expand-lg">
+        <div class="container-fluid">
+
+            <!-- Logo / Brand -->
+            <a class="navbar-brand" href="@Url.Action("Index", "Home")">
+                <span class="navbar-brand-text">🚌 BizFleet</span>
+            </a>
+
+            <!-- Mobile hamburger button -->
+            <button class="navbar-toggler border-0" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <i class="fas fa-bars" style="color: white;"></i>
+            </button>
+
+            <!-- Nav Links -->
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav me-auto ms-3">
+
+                    @* Show nav links only if logged in *@
+                    @if (Session["UserId"] != null)
+                    {
+                        @* Admin only links *@
+                        @if (Session["Role"].ToString() == "Admin")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link nav-link-custom" href="@Url.Action("Dashboard", "Admin")">
+                                    <i class="fas fa-chart-pie me-1"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link nav-link-custom" href="@Url.Action("Index", "Fleet")">
+                                    <i class="fas fa-bus me-1"></i> Fleet
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link nav-link-custom" href="@Url.Action("Index", "Booking")">
+                                    <i class="fas fa-calendar-check me-1"></i> Bookings
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link nav-link-custom" href="@Url.Action("Index", "Report")">
+                                    <i class="fas fa-file-chart-bar me-1"></i> Reports
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            @* Regular user links *@
+                            <li class="nav-item">
+                                <a class="nav-link nav-link-custom" href="@Url.Action("Index", "Booking")">
+                                    <i class="fas fa-calendar-check me-1"></i> My Bookings
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link nav-link-custom" href="@Url.Action("Create", "Booking")">
+                                    <i class="fas fa-plus-circle me-1"></i> New Booking
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link nav-link-custom" href="@Url.Action("Index", "Fleet")">
+                                    <i class="fas fa-bus me-1"></i> View Fleet
+                                </a>
+                            </li>
+                        }
+                    }
+                </ul>
+
+                <!-- Right side: User info + Logout -->
+                <ul class="navbar-nav ms-auto">
+                    @if (Session["UserId"] != null)
+                    {
+                        <li class="nav-item d-flex align-items-center me-3">
+                            <span style="color: #94A3B8; font-size: 0.85rem;">
+                                👋 @Session["FullName"] &nbsp;
+                                <span class="badge" style="background: rgba(79,70,229,0.3); color: #818CF8; font-size: 0.7rem;">
+                                    @Session["Role"]
+                                </span>
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom" href="@Url.Action("Logout", "Account")">
+                                <i class="fas fa-sign-out-alt me-1"></i> Logout
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom" href="@Url.Action("Login", "Account")">
+                                <i class="fas fa-sign-in-alt me-1"></i> Login
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ── PAGE CONTENT ── -->
+    <main class="main-content">
+
+        @* Show success/error messages from TempData *@
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert-glass alert-success-glass">
+                <i class="fas fa-check-circle"></i> @TempData["Success"]
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert-glass alert-error-glass">
+                <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+            </div>
+        }
+
+        @* Main page content goes here *@
+        @RenderBody()
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="@Url.Content("~/Scripts/bizfleet.js")"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
+
+
+<!-- ============================================================
+     FILE    : Views/Account/Login.cshtml
+     PURPOSE : Login page with modern 3D card design
+     ============================================================ -->
+@{
+    ViewBag.Title = "Login";
+    Layout = null; // No navbar on login page — full screen
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login — BizFleet</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/bizfleet.css")" rel="stylesheet" />
+</head>
+<body>
+<div class="login-page">
+    <div class="card-glass login-card">
+
+        <!-- Logo -->
+        <div class="login-logo">🚌 BizFleet</div>
+        <p class="login-tagline">B2B Bus Fleet Management Portal</p>
+
+        <!-- Error message -->
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert-glass alert-error-glass mb-4">
+                <i class="fas fa-exclamation-circle"></i> @ViewBag.Error
+            </div>
+        }
+
+        <!-- Success message (after register) -->
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert-glass alert-success-glass mb-4">
+                <i class="fas fa-check-circle"></i> @TempData["Success"]
+            </div>
+        }
+
+        <!-- Login Form -->
+        @using (Html.BeginForm("Login", "Account", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="mb-4 text-start">
+                <label class="form-label-dark">Email Address</label>
+                <div style="position: relative;">
+                    <i class="fas fa-envelope" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color: #64748B;"></i>
+                    <input type="email" name="email" class="form-control-dark"
+                           placeholder="you@company.com"
+                           style="padding-left: 42px;" required />
+                </div>
+            </div>
+
+            <div class="mb-4 text-start">
+                <label class="form-label-dark">Password</label>
+                <div style="position: relative;">
+                    <i class="fas fa-lock" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color: #64748B;"></i>
+                    <input type="password" name="password" id="passwordInput"
+                           class="form-control-dark"
+                           placeholder="••••••••"
+                           style="padding-left: 42px;" required />
+                    <!-- Show/hide password toggle -->
+                    <i class="fas fa-eye" id="togglePassword"
+                       style="position:absolute; right:14px; top:50%; transform:translateY(-50%); color: #64748B; cursor:pointer;"></i>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary-3d w-100" style="justify-content: center;">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </button>
+        }
+
+        <!-- Register link -->
+        <p style="margin-top: 24px; color: var(--text-muted); font-size: 0.9rem;">
+            New business?
+            <a href="@Url.Action("Register", "Account")"
+               style="color: var(--primary); font-weight: 600; text-decoration: none;">
+                Create Account
+            </a>
+        </p>
+
+        <!-- Demo credentials hint -->
+        <div style="margin-top: 24px; padding: 16px; background: rgba(255,255,255,0.03);
+                    border-radius: 8px; border: 1px dashed rgba(255,255,255,0.1);">
+            <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 8px; font-weight: 600;">
+                DEMO CREDENTIALS
+            </p>
+            <p style="color: #94A3B8; font-size: 0.78rem; margin: 0;">
+                Admin: admin@bizfleet.com / Admin@123<br/>
+                User:  raj@abc.com / Pass@123
+            </p>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script>
+    // Toggle password visibility
+    $('#togglePassword').on('click', function () {
+        var input = $('#passwordInput');
+        var isPassword = input.attr('type') === 'password';
+        input.attr('type', isPassword ? 'text' : 'password');
+        $(this).toggleClass('fa-eye fa-eye-slash');
+    });
+</script>
+</body>
+</html>
+
+
+<!-- ============================================================
+     FILE    : Views/Account/Register.cshtml
+     PURPOSE : Business registration page
+     ============================================================ -->
+@model BizFleet.Models.User
+@{
+    ViewBag.Title = "Register";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Register — BizFleet</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+    <link href="@Url.Content("~/Content/bizfleet.css")" rel="stylesheet"/>
+</head>
+<body>
+<div class="login-page" style="padding: 40px 24px;">
+    <div class="card-glass" style="width:100%; max-width:560px; padding: 48px;">
+
+        <div class="login-logo">🚌 BizFleet</div>
+        <p class="login-tagline">Register Your Business</p>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert-glass alert-error-glass">
+                <i class="fas fa-exclamation-circle"></i> @ViewBag.Error
+            </div>
+        }
+
+        @using (Html.BeginForm("Register", "Account", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="grid-2 text-start" style="gap: 16px; margin-bottom: 0;">
+
+                <div class="mb-3">
+                    <label class="form-label-dark">Company Name *</label>
+                    @Html.TextBoxFor(m => m.CompanyName, new { @class = "form-control-dark", placeholder = "ABC Corporates" })
+                    @Html.ValidationMessageFor(m => m.CompanyName, "", new { style = "color:#EF4444; font-size:0.8rem;" })
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-dark">Full Name *</label>
+                    @Html.TextBoxFor(m => m.FullName, new { @class = "form-control-dark", placeholder = "John Smith" })
+                    @Html.ValidationMessageFor(m => m.FullName, "", new { style = "color:#EF4444; font-size:0.8rem;" })
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-dark">Email Address *</label>
+                    @Html.TextBoxFor(m => m.Email, new { @class = "form-control-dark", placeholder = "john@company.com", type = "email" })
+                    @Html.ValidationMessageFor(m => m.Email, "", new { style = "color:#EF4444; font-size:0.8rem;" })
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-dark">Password *</label>
+                    @Html.PasswordFor(m => m.Password, new { @class = "form-control-dark", placeholder = "Min 6 characters" })
+                    @Html.ValidationMessageFor(m => m.Password, "", new { style = "color:#EF4444; font-size:0.8rem;" })
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-dark">Phone</label>
+                    @Html.TextBoxFor(m => m.Phone, new { @class = "form-control-dark", placeholder = "9876543210" })
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label-dark">Address</label>
+                    @Html.TextBoxFor(m => m.Address, new { @class = "form-control-dark", placeholder = "City, State" })
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary-3d w-100 mt-3" style="justify-content:center;">
+                <i class="fas fa-user-plus"></i> Create Account
+            </button>
+        }
+
+        <p style="margin-top:20px; color:var(--text-muted); font-size:0.9rem; text-align:center;">
+            Already registered?
+            <a href="@Url.Action("Login", "Account")" style="color:var(--primary); font-weight:600; text-decoration:none;">
+                Sign In
+            </a>
+        </p>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+
+<!-- ============================================================
+     FILE    : Views/Admin/Dashboard.cshtml
+     PURPOSE : Admin dashboard with stat cards + tables
+     ============================================================ -->
+@model BizFleet.Models.DashboardViewModel
+@{ ViewBag.Title = "Dashboard"; }
+
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="page-title">📊 Dashboard</h1>
+        <p class="page-subtitle">Welcome back, @Session["UserName"]! Here's today's overview.</p>
+    </div>
+    <div>
+        <span style="color:var(--text-muted); font-size:0.85rem;">
+            <i class="fas fa-clock me-1"></i>
+            <span id="currentTime"></span>
+        </span>
+    </div>
+</div>
+
+<!-- ── STAT CARDS ROW 1 — Fleet Stats ── -->
+<div class="grid-4 mb-4">
+
+    <div class="card-glass stat-card">
+        <div class="stat-icon blue"><i class="fas fa-bus"></i></div>
+        <div class="stat-number">@Model.TotalBuses</div>
+        <div class="stat-label">Total Buses</div>
+    </div>
+
+    <div class="card-glass stat-card">
+        <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-number">@Model.AvailableBuses</div>
+        <div class="stat-label">Available</div>
+    </div>
+
+    <div class="card-glass stat-card">
+        <div class="stat-icon purple"><i class="fas fa-road"></i></div>
+        <div class="stat-number">@Model.BusesOnTrip</div>
+        <div class="stat-label">On Trip</div>
+    </div>
+
+    <div class="card-glass stat-card">
+        <div class="stat-icon amber"><i class="fas fa-tools"></i></div>
+        <div class="stat-number">@Model.BusesInMaintenance</div>
+        <div class="stat-label">Maintenance</div>
+    </div>
+</div>
+
+<!-- ── STAT CARDS ROW 2 — Booking Stats ── -->
+<div class="grid-4 mb-4">
+
+    <div class="card-glass stat-card">
+        <div class="stat-icon cyan"><i class="fas fa-calendar-alt"></i></div>
+        <div class="stat-number">@Model.TotalBookings</div>
+        <div class="stat-label">Total Bookings</div>
+    </div>
+
+    <div class="card-glass stat-card">
+        <div class="stat-icon amber"><i class="fas fa-hourglass-half"></i></div>
+        <div class="stat-number">@Model.PendingBookings</div>
+        <div class="stat-label">Pending</div>
+    </div>
+
+    <div class="card-glass stat-card">
+        <div class="stat-icon green"><i class="fas fa-thumbs-up"></i></div>
+        <div class="stat-number">@Model.ApprovedBookings</div>
+        <div class="stat-label">Approved</div>
+    </div>
+
+    <div class="card-glass stat-card">
+        <div class="stat-icon blue"><i class="fas fa-building"></i></div>
+        <div class="stat-number">@Model.TotalCompanies</div>
+        <div class="stat-label">Companies</div>
+    </div>
+</div>
+
+<!-- ── PENDING BOOKINGS TABLE ── -->
+<div class="card-glass mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 style="font-size:1.1rem; font-weight:700; color:var(--text);">
+            ⏳ Pending Approvals
+        </h2>
+        <a href="@Url.Action("Index","Booking","Pending")" class="btn-primary-3d" style="padding:8px 16px; font-size:0.8rem;">
+            View All
+        </a>
+    </div>
+
+    @if (Model.PendingBookingsList != null && Model.PendingBookingsList.Count > 0)
+    {
+        <table class="table-dark-custom w-100">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Company</th>
+                    <th>Route</th>
+                    <th>Trip Date</th>
+                    <th>Buses</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var booking in Model.PendingBookingsList)
+                {
+                    <tr>
+                        <td style="color:var(--text-muted);">#@booking.BookingId</td>
+                        <td style="font-weight:600;">@booking.CompanyName</td>
+                        <td>@booking.FromLocation → @booking.ToLocation</td>
+                        <td>@booking.TripDate.ToString("dd MMM yyyy")</td>
+                        <td><span class="badge-status badge-pending">@booking.NoOfBuses Bus(es)</span></td>
+                        <td>
+                            <a href="@Url.Action("Index","Booking")" class="btn-primary-3d"
+                               style="padding:6px 14px; font-size:0.78rem;">
+                                Manage
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p style="color:var(--text-muted); text-align:center; padding:40px 0;">
+            <i class="fas fa-check-circle" style="font-size:2rem; color:var(--success); display:block; margin-bottom:12px;"></i>
+            All caught up! No pending bookings.
+        </p>
+    }
+</div>
+
+
+<!-- ============================================================
+     FILE    : Views/Fleet/Index.cshtml
+     PURPOSE : Bus fleet list with search/filter
+     ============================================================ -->
+@model List<BizFleet.Models.Bus>
+@{ ViewBag.Title = "Fleet Management"; }
+
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="page-title">🚌 Fleet Management</h1>
+        <p class="page-subtitle">@Model.Count bus(es) in fleet</p>
+    </div>
+    @if (Session["Role"].ToString() == "Admin")
+    {
+        <a href="@Url.Action("Create", "Fleet")" class="btn-primary-3d">
+            <i class="fas fa-plus"></i> Add Bus
+        </a>
+    }
+</div>
+
+<!-- Filter Bar -->
+@using (Html.BeginForm("Index", "Fleet", FormMethod.Get))
+{
+    <div class="filter-bar">
+        <select name="status" class="filter-select" onchange="this.form.submit()">
+            <option value="">All Status</option>
+            <option value="Available"   @(ViewBag.StatusFilter == "Available"   ? "selected" : "")>Available</option>
+            <option value="On Trip"     @(ViewBag.StatusFilter == "On Trip"     ? "selected" : "")>On Trip</option>
+            <option value="Maintenance" @(ViewBag.StatusFilter == "Maintenance" ? "selected" : "")>Maintenance</option>
+        </select>
+
+        <select name="type" class="filter-select" onchange="this.form.submit()">
+            <option value="">All Types</option>
+            <option value="Mini"     @(ViewBag.TypeFilter == "Mini"     ? "selected" : "")>Mini</option>
+            <option value="Standard" @(ViewBag.TypeFilter == "Standard" ? "selected" : "")>Standard</option>
+            <option value="Luxury"   @(ViewBag.TypeFilter == "Luxury"   ? "selected" : "")>Luxury</option>
+        </select>
+
+        @if (!string.IsNullOrEmpty(ViewBag.StatusFilter as string) || !string.IsNullOrEmpty(ViewBag.TypeFilter as string))
+        {
+            <a href="@Url.Action("Index","Fleet")" style="color:var(--text-muted); font-size:0.85rem; text-decoration:none;">
+                <i class="fas fa-times"></i> Clear filters
+            </a>
+        }
+    </div>
+}
+
+<!-- Bus Cards Grid -->
+<div class="grid-3">
+    @foreach (var bus in Model)
+    {
+        <div class="card-glass">
+            <!-- Bus icon/header -->
+            <div style="text-align:center; margin-bottom:16px;">
+                <div style="font-size:3rem;">🚌</div>
+                <h3 style="font-size:1.1rem; font-weight:700; margin:8px 0 4px;">@bus.BusNumber</h3>
+                <span class="badge-status badge-@bus.Status.ToLower().Replace(" ","-")">@bus.Status</span>
+            </div>
+
+            <!-- Bus details -->
+            <div style="border-top:1px solid var(--glass-border); padding-top:16px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span style="color:var(--text-muted); font-size:0.85rem;">Type</span>
+                    <span style="font-weight:600; font-size:0.9rem;">@bus.BusType</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span style="color:var(--text-muted); font-size:0.85rem;">Capacity</span>
+                    <span style="font-weight:600; font-size:0.9rem;">@bus.Capacity seats</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span style="color:var(--text-muted); font-size:0.85rem;">Model</span>
+                    <span style="font-weight:600; font-size:0.9rem;">@(bus.Model ?? "—")</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="color:var(--text-muted); font-size:0.85rem;">Year</span>
+                    <span style="font-weight:600; font-size:0.9rem;">@(bus.Year.HasValue ? bus.Year.ToString() : "—")</span>
+                </div>
+            </div>
+
+            <!-- Admin action buttons -->
+            @if (Session["Role"].ToString() == "Admin")
+            {
+                <div style="display:flex; gap:8px; margin-top:16px; padding-top:16px; border-top:1px solid var(--glass-border);">
+                    <a href="@Url.Action("Edit","Fleet", new { id = bus.BusId })"
+                       class="btn-primary-3d" style="flex:1; justify-content:center; padding:8px 12px; font-size:0.82rem;">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+
+                    @using (Html.BeginForm("Delete","Fleet", new { id = bus.BusId }, FormMethod.Post, new { style = "flex:1;" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <button type="submit"
+                                class="btn-primary-3d btn-danger-3d"
+                                style="width:100%; justify-content:center; padding:8px 12px; font-size:0.82rem;"
+                                onclick="return confirm('Remove this bus from fleet?')">
+                            <i class="fas fa-trash"></i> Remove
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+
+<!-- ============================================================
+     FILE    : Views/Booking/Create.cshtml
+     PURPOSE : New booking request form for business users
+     ============================================================ -->
+@model BizFleet.Models.Booking
+@{ ViewBag.Title = "New Booking"; }
+
+<div class="page-header">
+    <h1 class="page-title">📋 New Booking Request</h1>
+    <p class="page-subtitle">Submit a trip request — our team will review and confirm</p>
+</div>
+
+<div class="card-glass" style="max-width:700px;">
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert-glass alert-error-glass mb-4">
+            <i class="fas fa-exclamation-circle"></i> @ViewBag.Error
+        </div>
+    }
+
+    @using (Html.BeginForm("Create", "Booking", FormMethod.Post, new { id = "bookingForm" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="grid-2">
+
+            <div class="mb-4">
+                <label class="form-label-dark">From Location *</label>
+                @Html.TextBoxFor(m => m.FromLocation,
+                    new { @class = "form-control-dark", placeholder = "Mumbai" })
+                @Html.ValidationMessageFor(m => m.FromLocation, "",
+                    new { style = "color:#EF4444; font-size:0.8rem;" })
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label-dark">To Location *</label>
+                @Html.TextBoxFor(m => m.ToLocation,
+                    new { @class = "form-control-dark", placeholder = "Pune" })
+                @Html.ValidationMessageFor(m => m.ToLocation, "",
+                    new { style = "color:#EF4444; font-size:0.8rem;" })
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label-dark">Trip Date *</label>
+                @Html.TextBoxFor(m => m.TripDate,
+                    new { @class = "form-control-dark", type = "date" })
+                @Html.ValidationMessageFor(m => m.TripDate, "",
+                    new { style = "color:#EF4444; font-size:0.8rem;" })
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label-dark">Return Date (optional)</label>
+                @Html.TextBoxFor(m => m.ReturnDate,
+                    new { @class = "form-control-dark", type = "date" })
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label-dark">No. of Buses *</label>
+                @Html.TextBoxFor(m => m.NoOfBuses,
+                    new { @class = "form-control-dark", type = "number", min = "1", max = "20" })
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label-dark">No. of Passengers</label>
+                @Html.TextBoxFor(m => m.NoOfPassengers,
+                    new { @class = "form-control-dark", type = "number", min = "1", placeholder = "50" })
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label-dark">Purpose of Trip</label>
+            @Html.TextBoxFor(m => m.Purpose,
+                new { @class = "form-control-dark", placeholder = "Corporate Offsite, Team Building, Client Visit..." })
+        </div>
+
+        <div style="display:flex; gap:12px;">
+            <button type="submit" class="btn-primary-3d">
+                <i class="fas fa-paper-plane"></i> Submit Booking
+            </button>
+            <a href="@Url.Action("Index","Booking")" class="btn-primary-3d"
+               style="background: var(--glass); box-shadow: none; border: 1px solid var(--glass-border);">
+                <i class="fas fa-arrow-left"></i> Cancel
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+<script>
+// jQuery validation — check trip date is not in past
+$('#bookingForm').on('submit', function (e) {
+    var tripDate = new Date($('[name="TripDate"]').val());
+    var today    = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (tripDate < today) {
+        alert('Trip date cannot be in the past!');
+        e.preventDefault(); // Stop form submission
+        return false;
+    }
+});
+</script>
+}
+
+
+<!-- ============================================================
+     FILE    : Views/Report/Index.cshtml
+     PURPOSE : Monthly booking reports with CSV export
+     ============================================================ -->
+@{ ViewBag.Title = "Reports"; }
+
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="page-title">📈 Monthly Reports</h1>
+        <p class="page-subtitle">Booking statistics for @ViewBag.Year</p>
+    </div>
+    <div style="display:flex; gap:12px; align-items:center;">
+        <!-- Year selector -->
+        @using (Html.BeginForm("Index","Report",FormMethod.Get))
+        {
+            <select name="year" class="filter-select" onchange="this.form.submit()">
+                @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 3; y--)
+                {
+                    <option value="@y" @(ViewBag.Year == y ? "selected" : "")>@y</option>
+                }
+            </select>
+        }
+        <!-- CSV Export Button -->
+        <a href="@Url.Action("ExportCSV","Report", new { year = ViewBag.Year })"
+           class="btn-primary-3d btn-success-3d">
+            <i class="fas fa-file-csv"></i> Export CSV
+        </a>
+    </div>
+</div>
+
+<!-- Report Table -->
+<div class="card-glass">
+    @{
+        var reportData = ViewBag.ReportData as System.Data.DataTable;
+        string[] months = { "", "January", "February", "March", "April",
+                             "May", "June", "July", "August", "September",
+                             "October", "November", "December" };
+    }
+
+    @if (reportData != null && reportData.Rows.Count > 0)
+    {
+        <table class="table-dark-custom">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Total Bookings</th>
+                    <th>Buses Used</th>
+                    <th>Approved</th>
+                    <th>Rejected</th>
+                    <th>Pending</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (System.Data.DataRow row in reportData.Rows)
+                {
+                    int monthNum = Convert.ToInt32(row["Month"]);
+                    <tr>
+                        <td style="font-weight:600;">@months[monthNum]</td>
+                        <td>@row["TotalBookings"]</td>
+                        <td>@row["TotalBusesUsed"]</td>
+                        <td><span class="badge-status badge-approved">@row["Approved"]</span></td>
+                        <td><span class="badge-status badge-rejected">@row["Rejected"]</span></td>
+                        <td><span class="badge-status badge-pending">@row["Pending"]</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p style="text-align:center; color:var(--text-muted); padding:60px 0;">
+            <i class="fas fa-chart-bar" style="font-size:2.5rem; display:block; margin-bottom:12px;"></i>
+            No booking data found for @ViewBag.Year.
+        </p>
+    }
+</div>
