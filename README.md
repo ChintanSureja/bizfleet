@@ -119,21 +119,6 @@ Open `Web.config` and update:
 
 ---
 
-## 📸 Screenshots
-
-> _Add screenshots of your app here after running it!_
-> Tools → Snipping Tool → capture each page
-
-| Page | Description |
-|------|-------------|
-| Login | Modern glassmorphism login screen |
-| Dashboard | Real-time stats with animated counters |
-| Fleet | Bus cards with 3D hover effect |
-| Bookings | Status management table |
-| Reports | Monthly data + CSV export |
-
----
-
 ## 🗄️ Database Schema
 
 ```
@@ -154,21 +139,6 @@ Reports   → ReportId, Month, Year, CompanyId, TotalTrips
 - **CSV export** — pure C# byte stream, no third-party libraries
 - **Glassmorphism UI** — modern frosted glass design with 3D card tilt
 - **Responsive layout** — works on desktop and mobile
-
----
-
-## 👨‍💻 Author
-
-**[ Your Name ]**
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [linkedin.com/in/yourname](https://linkedin.com/in/yourname)
-- Email: your.email@gmail.com
-
----
-
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
